@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest'
 import { generate as generateCpf } from 'gerador-validador-cpf'
+import { faker } from '@faker-js/faker/locale/pt_BR'
 import req from 'supertest'
 
 describe('Criar usuário', () => {
@@ -23,12 +24,12 @@ describe('Criar usuário', () => {
           }
         ]
       },
-      "nome": "teste",
+      "nome": faker.person.fullName(),
       "flagNomeSocial": false,
       "escolaridade": "Ensino Superior",
       "documentos": [
         {
-          "numeroDocumento": "74316457756",
+          "numeroDocumento": generateCpf(),
           "tipoDocumento": "CPF"
         }
       ],
@@ -87,45 +88,59 @@ describe('Criar usuário', () => {
           "contatoEmergencia": false
         }
       ],
-      "idVinculoInstitucional": 1,
-      "idSituacaoFuncional": 217,
-      "acessaSistema": false,
-      "dataInicioDPMG": "2026-07-23",
-      "idCargaHoraria": 7,
-      "dataPublicacao": "2026-07-23",
-      "dataAdmissaoPosse": "2026-07-23",
-      "dataIngressoCargoEfetivoDefensoria": "2026-07-23",
-      "masp": "123",
-      "madep": "123",
-      "idTurmaConcurso": 11,
-      "idClasseDefensor": 4,
-      "dataInicioClasse": "2026-07-23",
-      "classificacaoConcurso": "10",
-      "isEstagio": false,
-      "lotacoes": [
-        {
-          "tipoAtividade": "Finalística",
-          "uuidComarca": "cb7a0922-ec2c-44a5-9797-f521b5055a89",
-          "uuidOrgaoAtuacao": "31a2cce8-ff47-466e-9852-90ccb1391b5f",
-          "uuidOrgaoExecutor": "00ab77d4-0f7f-4184-82d9-b978af9b0223",
-          "uuidInstalacaoFisica": "8dd1c3c3-023b-481d-b103-3e61a7a7e5f3",
-          "situacaoAtuacao": "Atuando",
-          "tipoNaturezaAtuacao": "Titular"
-        }
-      ],
       "orgaos": [],
       "setores": []
     }
 
     const token = 'eyJhbGciOiJIUzM4NCIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJlMTMyNTIwOC03ZmIzLTRhMWUtYjhhNC1mOGUyNWYzNTIxZWUiLCJ0eXBlIjoiVVNVQVJJT19JTlRFUk5PIiwiZmlzdCI6ZmFsc2UsImlhdCI6MTc4NDg0MTIxMSwiZXhwIjoxNzg0ODQ4NDExLCJqdGkiOiIxMC4yMzMuMTE0LjE1NyJ9.rB_t9TzBOwIGksHUHGFIiXgJBNmDdBQ9Aw2ZwmlLx7LJG80s5yzhDFx5cR4ytJZk'
 
-    const { body, text, status} = await req('https://dev.gerais.mg.def.br/dpmg-institucional/service/administrar-pessoa/v3') 
+    const vinculoInstitucional = getVinculoInstitucional()
+    Object.assign(payload,  vinculoInstitucional)
+
+    console.log({ payload })
+
+    const { body, text, status } = await req('https://dev.gerais.mg.def.br/dpmg-institucional/service/administrar-pessoa/v3')
       .post('/')
       .send(payload)
       .set('Authorization', `Bearer ${token}`)
 
-    console.log({body, text, status}) 
+    if (status !== 200) {
+      console.log({ body, text, status })
+    }
+    expect(status).toBe(200)
+
   })
 
 
 })
+
+function getVinculoInstitucional() {
+  return {
+    "idVinculoInstitucional": 1,
+    "idSituacaoFuncional": 217,
+    "acessaSistema": false,
+    "dataInicioDPMG": "2026-07-23",
+    "idCargaHoraria": 7,
+    "dataPublicacao": "2026-07-23",
+    "dataAdmissaoPosse": "2026-07-23",
+    "dataIngressoCargoEfetivoDefensoria": "2026-07-23",
+    "masp": "123",
+    "madep": "123",
+    "idTurmaConcurso": 11,
+    "idClasseDefensor": 4,
+    "dataInicioClasse": "2026-07-23",
+    "classificacaoConcurso": "10",
+    "isEstagio": false,
+    "lotacoes": [
+      {
+        "tipoAtividade": "Finalística",
+        "uuidComarca": "cb7a0922-ec2c-44a5-9797-f521b5055a89",
+        "uuidOrgaoAtuacao": "31a2cce8-ff47-466e-9852-90ccb1391b5f",
+        "uuidOrgaoExecutor": "00ab77d4-0f7f-4184-82d9-b978af9b0223",
+        "uuidInstalacaoFisica": "8dd1c3c3-023b-481d-b103-3e61a7a7e5f3",
+        "situacaoAtuacao": "Atuando",
+        "tipoNaturezaAtuacao": "Titular"
+      }
+    ],
+  }
+}
