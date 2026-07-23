@@ -2,7 +2,7 @@ import type { Page } from 'playwright';
 import { generate as generateCpf } from 'gerador-validador-cpf';
 
 const LOGIN_URL = 'https://dev.gerais.mg.def.br/service/scsdp/login/interno';
-const LOGIN_DATA = 'U2FsdGVkX18v7WWfi00SLtYpnZXdw3kHaI0sHkCR8HdgGJFDkstD2qmKMvyGg8i726REvOtY59C45YSY8GGpka6boMIek5rbFzYRvzQXZ8HkLHJYklgIDw==';
+const LOGIN_DATA = '';
 
 export async function login(page: Page): Promise<string> {
   const response = await page.request.post(LOGIN_URL, {
