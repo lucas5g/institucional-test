@@ -1,6 +1,7 @@
 import type { Page } from 'playwright';
 import { generate as generateCpf } from 'gerador-validador-cpf';
 
+
 const LOGIN_URL = 'https://dev.gerais.mg.def.br/service/scsdp/login/interno';
 const LOGIN_DATA = '';
 
@@ -52,5 +53,9 @@ export async function getCpf(token: string) {
   }
 
   return cpf;
+
+}
+
+export async function vinculoInstitucionalListagemOrdenada(){
 
 }
