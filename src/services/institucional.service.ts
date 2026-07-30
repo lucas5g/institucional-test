@@ -3,10 +3,25 @@ import { generate as generateCpf } from 'gerador-validador-cpf'
 import { InstitucionalRequest } from './institucional.request'
 
 export type DescricaoVinculo = 'DEFENSOR(A)' | 'ESTÁGIO' | 'SERVIDOR(A)'
+export const NATUREZAS_VINCULO_SERVIDOR = [
+  'Efetivo',
+  'Recrutamento Amplo',
+  'Cedido',
+  'Mandato',
+  'Militar'
+] as const
+export type NaturezaVinculoServidor = typeof NATUREZAS_VINCULO_SERVIDOR[number]
+
+type DescricaoVinculoSemNatureza = Exclude<DescricaoVinculo, 'SERVIDOR(A)'>
+
+interface CreateResponse {
+  dados?: string
+  mensagem: string
+}
 
 interface PreparaPayloadInterface {
   descricaoVinculo: DescricaoVinculo
-  naturezaVinculo?: string
+  naturezaVinculo?: NaturezaVinculoServidor
   idVinculoInstitucional: number
   idSituacaoFuncional: number
   idCargaHoraria: number
@@ -42,8 +57,9 @@ export class InstitucionalService {
   }
 
   private preparePayload(dados: PreparaPayloadInterface) {
-    const isServidorEfetivo = dados.descricaoVinculo === 'SERVIDOR(A)'
-      && dados.naturezaVinculo === 'Efetivo'
+    const dadosCurso = dados.descricaoVinculo === 'SERVIDOR(A)'
+      ? { idContrato: 54, idCurso: 3 }
+      : { idContrato: 147, idCurso: 7 }
     const payload = {
       geralPessoa: {
         estadoCivil: 'Casado(a)',
@@ -61,7 +77,11 @@ export class InstitucionalService {
           }
         ]
       },
-      nome: faker.person.fullName(),
+      nome: [
+        faker.person.firstName(),
+        dados.descricaoVinculo,
+        dados.naturezaVinculo
+      ].filter(Boolean).join(' '),
       flagNomeSocial: false,
       escolaridade: 'Ensino Superior',
       documentos: [
@@ -73,10 +93,10 @@ export class InstitucionalService {
       pessoaCurso: [
         {
           contrato: {
-            id: isServidorEfetivo ? 54 : 147
+            id: dadosCurso.idContrato
           },
           curso: {
-            id: isServidorEfetivo ? 3 : 7
+            id: dadosCurso.idCurso
           },
           grauEscolaridade: 'Ensino Superior',
           situacaoCurso: 'CONCLUIDO',
@@ -140,7 +160,7 @@ export class InstitucionalService {
       isEstagio: dados.descricaoVinculo === 'ESTÁGIO'
     }
 
-    if (isServidorEfetivo) {
+    if (dados.descricaoVinculo === 'SERVIDOR(A)') {
       return {
         ...payload,
         numeroSei: faker.string.numeric(6),
@@ -180,7 +200,23 @@ export class InstitucionalService {
     }
   }
 
-  async create(descricaoVinculo: DescricaoVinculo, naturezaVinculo?: string) {
+  async create(
+    descricaoVinculo: 'SERVIDOR(A)',
+    naturezaVinculo: NaturezaVinculoServidor
+  ): Promise<CreateResponse>
+  async create(
+    descricaoVinculo: DescricaoVinculoSemNatureza,
+    naturezaVinculo?: never
+  ): Promise<CreateResponse>
+  async create(
+    descricaoVinculo: DescricaoVinculo,
+    naturezaVinculo?: NaturezaVinculoServidor
+  ): Promise<CreateResponse> {
+    if (descricaoVinculo === 'SERVIDOR(A)'
+      && !NATUREZAS_VINCULO_SERVIDOR.includes(naturezaVinculo!)) {
+      throw new Error(`Natureza do vínculo inválida para ${descricaoVinculo}: ${naturezaVinculo}`)
+    }
+
     const vinculo = await this.getVinculoInstitucionalPelaDescricao(descricaoVinculo)
 
     if (!vinculo) {
@@ -211,10 +247,7 @@ export class InstitucionalService {
       idTurmaConcurso: turmaConcurso
     })
 
-    return await this.request.administrarPessoaV3(payload) as {
-      dados?: string
-      mensagem: string
-    }
+    return await this.request.administrarPessoaV3(payload) as CreateResponse
   }
 
   async visualizar(uuid: string) {

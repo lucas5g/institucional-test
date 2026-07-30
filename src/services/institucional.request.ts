@@ -93,7 +93,6 @@ export class InstitucionalRequest {
   }
 
   async administrarPessoaVisualizar(uuid: string) {
-    console.log('uuid => ', uuid)
 
     const { text } = await req(env.BASE_URL_API)
       .get(`/dpmg-institucional/service/administrar-pessoa/visualizar/${uuid}`)
@@ -101,7 +100,6 @@ export class InstitucionalRequest {
       .set('Authorization', `Bearer ${this.token}`)
       .expect(500)
 
-    console.log({ text })
     return text
   }
 }   
