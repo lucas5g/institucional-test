@@ -2,7 +2,6 @@ import { faker } from '@faker-js/faker/locale/pt_BR'
 import { generate as generateCpf } from 'gerador-validador-cpf'
 import { InstitucionalRequest } from './institucional.request'
 
-export type DescricaoVinculo = 'DEFENSOR(A)' | 'ESTÁGIO' | 'SERVIDOR(A)'
 export const NATUREZAS_VINCULO_SERVIDOR = [
   'Efetivo',
   'Recrutamento Amplo',
@@ -10,9 +9,28 @@ export const NATUREZAS_VINCULO_SERVIDOR = [
   'Mandato',
   'Militar'
 ] as const
-export type NaturezaVinculoServidor = typeof NATUREZAS_VINCULO_SERVIDOR[number]
 
-type DescricaoVinculoSemNatureza = Exclude<DescricaoVinculo, 'SERVIDOR(A)'>
+export const NATUREZAS_VINCULO_ESTAGIO = [
+  'Não Obrigatório',
+  'Obrigatório',
+  'Cedido'
+] as const
+
+export type NaturezaVinculoServidor = typeof NATUREZAS_VINCULO_SERVIDOR[number]
+export type NaturezaVinculoEstagio = typeof NATUREZAS_VINCULO_ESTAGIO[number]
+
+export type CreateInput =
+  | {
+    descricaoVinculo: 'SERVIDOR(A)'
+    naturezaVinculo: NaturezaVinculoServidor
+  }
+  | {
+    descricaoVinculo: 'ESTÁGIO'
+    naturezaVinculo: NaturezaVinculoEstagio
+  }
+  | {
+    descricaoVinculo: 'DEFENSOR(A)'
+  }
 
 interface CreateResponse {
   dados?: string
@@ -20,12 +38,11 @@ interface CreateResponse {
 }
 
 interface PreparaPayloadInterface {
-  descricaoVinculo: DescricaoVinculo
-  naturezaVinculo?: NaturezaVinculoServidor
+  input: CreateInput
   idVinculoInstitucional: number
   idSituacaoFuncional: number
   idCargaHoraria: number
-  idTurmaConcurso: number
+  idTurmaConcurso?: number
   idClasseDefensor?: number
 }
 
@@ -57,13 +74,31 @@ export class InstitucionalService {
   }
 
   private preparePayload(dados: PreparaPayloadInterface) {
-    const dadosCurso = dados.descricaoVinculo === 'SERVIDOR(A)'
-      ? { idContrato: 54, idCurso: 3 }
-      : { idContrato: 147, idCurso: 7 }
+    const { input } = dados
+    const naturezaVinculo = 'naturezaVinculo' in input
+      ? input.naturezaVinculo
+      : undefined
+    const pessoaCurso = input.descricaoVinculo === 'ESTÁGIO'
+      ? []
+      : [
+        {
+          contrato: {
+            id: input.descricaoVinculo === 'SERVIDOR(A)' ? 54 : 147
+          },
+          curso: {
+            id: input.descricaoVinculo === 'SERVIDOR(A)' ? 3 : 7
+          },
+          grauEscolaridade: 'Ensino Superior',
+          situacaoCurso: 'CONCLUIDO',
+          dataConclusaoCurso: '1992-11-09'
+        }
+      ]
     const payload = {
       geralPessoa: {
         estadoCivil: 'Casado(a)',
-        dataNascimento: '1992-11-09',
+        dataNascimento: input.descricaoVinculo === 'ESTÁGIO'
+          ? '1995-08-17'
+          : '1992-11-09',
         etnia: 'Parda - Pardo',
         sexo: 'Masculino',
         genero: 'Homem cis',
@@ -79,8 +114,8 @@ export class InstitucionalService {
       },
       nome: [
         faker.person.firstName(),
-        dados.descricaoVinculo,
-        dados.naturezaVinculo
+        input.descricaoVinculo,
+        naturezaVinculo
       ].filter(Boolean).join(' '),
       flagNomeSocial: false,
       escolaridade: 'Ensino Superior',
@@ -90,19 +125,7 @@ export class InstitucionalService {
           tipoDocumento: 'CPF'
         }
       ],
-      pessoaCurso: [
-        {
-          contrato: {
-            id: dadosCurso.idContrato
-          },
-          curso: {
-            id: dadosCurso.idCurso
-          },
-          grauEscolaridade: 'Ensino Superior',
-          situacaoCurso: 'CONCLUIDO',
-          dataConclusaoCurso: '1992-11-09'
-        }
-      ],
+      pessoaCurso,
       enderecos: [
         {
           cep: '30626280',
@@ -152,22 +175,47 @@ export class InstitucionalService {
       acessaSistema: false,
       dataInicioDPMG: '2026-07-30',
       idCargaHoraria: dados.idCargaHoraria,
+      isEstagio: input.descricaoVinculo === 'ESTÁGIO'
+    }
+
+    if (input.descricaoVinculo === 'ESTÁGIO') {
+      return {
+        ...payload,
+        dataInicioDPMG: '2026-06-21',
+        dataConvocacaoEstagio: '2027-06-30',
+        dataTerminoEstagio: '2028-06-30',
+        emailSupervisor: 'marcus.fernandes@defensoria.mg.def.br',
+        tipoEstagio: input.naturezaVinculo,
+        modalidadeEstagio: 'Graduação',
+        lotacoes: [
+          {
+            tipoAtividade: 'Administrativa',
+            uuidComarca: 'cb7a0922-ec2c-44a5-9797-f521b5055a89',
+            uuidSetor: '2a03cca8-52f5-41f1-bd42-db50f7a19b2b',
+            uuidInstalacaoFisica: '8dd1c3c3-023b-481d-b103-3e61a7a7e5f3',
+            idOcupacao: 2
+          }
+        ]
+      }
+    }
+
+    const dadosFuncionaisCargo = {
       dataPublicacao: '2026-07-30',
       dataAdmissaoPosse: '2026-07-30',
       dataIngressoCargoEfetivoDefensoria: '2026-07-30',
       masp: faker.string.numeric(6),
-      idTurmaConcurso: dados.idTurmaConcurso,
-      isEstagio: dados.descricaoVinculo === 'ESTÁGIO'
+      idTurmaConcurso: dados.idTurmaConcurso
     }
 
-    if (dados.descricaoVinculo === 'SERVIDOR(A)') {
+    if (input.descricaoVinculo === 'SERVIDOR(A)') {
       return {
         ...payload,
+        ...dadosFuncionaisCargo,
         numeroSei: faker.string.numeric(6),
         nomeCargoServidor: 'Agente Da Defensoria Pública',
         nomeClasse: 'I',
         padrao: 'A',
-        naturezaVinculo: dados.naturezaVinculo,
+        naturezaVinculo: input.naturezaVinculo,
         lotacoes: [
           {
             tipoAtividade: 'Administrativa',
@@ -182,6 +230,7 @@ export class InstitucionalService {
 
     return {
       ...payload,
+      ...dadosFuncionaisCargo,
       madep: faker.string.numeric(6),
       idClasseDefensor: dados.idClasseDefensor,
       dataInicioClasse: '2026-07-30',
@@ -200,51 +249,46 @@ export class InstitucionalService {
     }
   }
 
-  async create(
-    descricaoVinculo: 'SERVIDOR(A)',
-    naturezaVinculo: NaturezaVinculoServidor
-  ): Promise<CreateResponse>
-  async create(
-    descricaoVinculo: DescricaoVinculoSemNatureza,
-    naturezaVinculo?: never
-  ): Promise<CreateResponse>
-  async create(
-    descricaoVinculo: DescricaoVinculo,
-    naturezaVinculo?: NaturezaVinculoServidor
-  ): Promise<CreateResponse> {
-    if (descricaoVinculo === 'SERVIDOR(A)'
-      && !NATUREZAS_VINCULO_SERVIDOR.includes(naturezaVinculo!)) {
-      throw new Error(`Natureza do vínculo inválida para ${descricaoVinculo}: ${naturezaVinculo}`)
-    }
-
-    const vinculo = await this.getVinculoInstitucionalPelaDescricao(descricaoVinculo)
+  async create(input: CreateInput): Promise<CreateResponse> {
+    const vinculo = await this.getVinculoInstitucionalPelaDescricao(input.descricaoVinculo)
 
     if (!vinculo) {
-      throw new Error(`Vínculo institucional não encontrado: ${descricaoVinculo}`)
+      throw new Error(`Vínculo institucional não encontrado: ${input.descricaoVinculo}`)
     }
 
     const situacaoFuncional = (await this.request.situacaoFuncionalFiltros(vinculo.id))[0]
     const horario = await this.getCargaHorariaPelaDescricao('40 horas semanais')
-    const turmaConcurso = await this.getFirstTurmaConcurso()
 
-    if (!situacaoFuncional || !horario || !turmaConcurso) {
-      throw new Error(`Não foi possível resolver os dados funcionais para ${descricaoVinculo}`)
+    if (!situacaoFuncional || !horario) {
+      throw new Error(`Não foi possível resolver os dados funcionais para ${input.descricaoVinculo}`)
     }
 
-    const classeDefensor = (await this.request.classeDefensor())[0]
+    let idTurmaConcurso: number | undefined
+    let idClasseDefensor: number | undefined
 
-    if (!classeDefensor) {
-      throw new Error(`Classe de defensor não encontrada para ${descricaoVinculo}`)
+    if (input.descricaoVinculo !== 'ESTÁGIO') {
+      idTurmaConcurso = await this.getFirstTurmaConcurso()
+
+      if (!idTurmaConcurso) {
+        throw new Error(`Turma de concurso não encontrada para ${input.descricaoVinculo}`)
+      }
+    }
+
+    if (input.descricaoVinculo === 'DEFENSOR(A)') {
+      idClasseDefensor = (await this.request.classeDefensor())[0]?.id
+
+      if (!idClasseDefensor) {
+        throw new Error(`Classe de defensor não encontrada para ${input.descricaoVinculo}`)
+      }
     }
 
     const payload = this.preparePayload({
-      descricaoVinculo,
-      naturezaVinculo,
+      input,
       idVinculoInstitucional: vinculo.id,
       idSituacaoFuncional: situacaoFuncional.id,
       idCargaHoraria: horario.id,
-      idClasseDefensor: classeDefensor?.id,
-      idTurmaConcurso: turmaConcurso
+      idTurmaConcurso,
+      idClasseDefensor
     })
 
     return await this.request.administrarPessoaV3(payload) as CreateResponse

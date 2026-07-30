@@ -88,18 +88,24 @@ export class InstitucionalRequest {
       .set('Authorization', `Bearer ${this.token}`)
       .send(payload)
 
-
     return body
   }
 
   async administrarPessoaVisualizar(uuid: string) {
+    const response = await fetch(
+      new URL(`/dpmg-institucional/service/administrar-pessoa/visualizar/${uuid}`, env.BASE_URL_API),
+      {
+        headers: {
+          Authorization: `Bearer ${this.token}`
+        }
+      }
+    )
+    const text = await response.text()
 
-    const { text } = await req(env.BASE_URL_API)
-      .get(`/dpmg-institucional/service/administrar-pessoa/visualizar/${uuid}`)
-      ///dpmg-institucional/service/administrar-pessoa/visualizar/605a0c83-c1d2-4ef7-a2d4-ac33cce253b7
-      .set('Authorization', `Bearer ${this.token}`)
-      .expect(500)
+    if (response.status !== 500) {
+      throw new Error(`Status inesperado ao visualizar pessoa: ${response.status}`)
+    }
 
     return text
   }
-}   
+}
