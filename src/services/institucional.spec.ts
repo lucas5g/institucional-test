@@ -1,9 +1,9 @@
 import { beforeAll, describe, expect, it } from 'vitest'
 
-import { InstitucionalService } from './services/institucional.service'
-import { login } from './utils/login'
+import { InstitucionalService } from './institucional.service'
+import { login } from '../utils/login'
 
-describe('Criar usuário', () => {
+describe('DEFENSOR(A)', () => {
   let service: InstitucionalService
 
   beforeAll(async () => {
@@ -11,14 +11,23 @@ describe('Criar usuário', () => {
     service = new InstitucionalService(token)
   })
 
-  it('POST DEFENSOR', async () => {
+  it('CRIAR DEFENSOR', async () => {
     const res = await service.create({ descricaoVinculo: 'DEFENSOR(A)' })
 
     expect(res.mensagem).toBe('Tudo certo! Registro cadastrado com sucesso.')
     expect(res.dados).toBeTruthy()
   }, 7200)
+})
 
-  it('POST ESTÁGIO NÃO OBRIGATÓRIO', async () => {
+describe('ESTÁGIO', () => {
+  let service: InstitucionalService
+
+  beforeAll(async () => {
+    const token = await login()
+    service = new InstitucionalService(token)
+  })
+
+  it('CRIAR NÃO OBRIGATÓRIO', async () => {
     const res = await service.create({
       descricaoVinculo: 'ESTÁGIO',
       naturezaVinculo: 'Não Obrigatório'
@@ -29,7 +38,7 @@ describe('Criar usuário', () => {
     await service.visualizar(res.dados!)
   }, 10000)
 
-  it('POST ESTÁGIO OBRIGATÓRIO', async () => {
+  it('CRIAR OBRIGATÓRIO', async () => {
     const res = await service.create({
       descricaoVinculo: 'ESTÁGIO',
       naturezaVinculo: 'Obrigatório'
@@ -40,7 +49,7 @@ describe('Criar usuário', () => {
     await service.visualizar(res.dados!)
   }, 10000)
 
-  it('POST ESTÁGIO CEDIDO', async () => {
+  it('CRIAR CEDIDO', async () => {
     const res = await service.create({
       descricaoVinculo: 'ESTÁGIO',
       naturezaVinculo: 'Cedido'
@@ -50,8 +59,17 @@ describe('Criar usuário', () => {
     expect(res.dados).toBeTruthy()
     await service.visualizar(res.dados!)
   }, 10000)
+})
 
-  it('POST SERVIDOR EFETIVO', async () => {
+describe('SERVIDOR(A)', () => {
+  let service: InstitucionalService
+
+  beforeAll(async () => {
+    const token = await login()
+    service = new InstitucionalService(token)
+  })
+
+  it('CRIAR EFETIVO', async () => {
     const res = await service.create({
       descricaoVinculo: 'SERVIDOR(A)',
       naturezaVinculo: 'Efetivo'
@@ -61,7 +79,7 @@ describe('Criar usuário', () => {
     expect(res.dados).toBeTruthy()
   }, 7000)
 
-  it('POST SERVIDOR RECRUTAMENTO AMPLO', async () => {
+  it('CRIAR RECRUTAMENTO AMPLO', async () => {
     const res = await service.create({
       descricaoVinculo: 'SERVIDOR(A)',
       naturezaVinculo: 'Recrutamento Amplo'
@@ -71,7 +89,7 @@ describe('Criar usuário', () => {
     expect(res.dados).toBeTruthy()
   }, 7000)
 
-  it('POST SERVIDOR CEDIDO', async () => {
+  it('CRIAR CEDIDO', async () => {
     const res = await service.create({
       descricaoVinculo: 'SERVIDOR(A)',
       naturezaVinculo: 'Cedido'
@@ -81,7 +99,7 @@ describe('Criar usuário', () => {
     expect(res.dados).toBeTruthy()
   }, 7000)
 
-  it('POST SERVIDOR MANDATO', async () => {
+  it('CRIAR MANDATO', async () => {
     const res = await service.create({
       descricaoVinculo: 'SERVIDOR(A)',
       naturezaVinculo: 'Mandato'
@@ -91,7 +109,7 @@ describe('Criar usuário', () => {
     expect(res.dados).toBeTruthy()
   }, 7000)
 
-  it('POST SERVIDOR MILITAR', async () => {
+  it('CRIAR MILITAR', async () => {
     const res = await service.create({
       descricaoVinculo: 'SERVIDOR(A)',
       naturezaVinculo: 'Militar'

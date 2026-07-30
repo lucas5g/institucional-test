@@ -1,6 +1,6 @@
 import { expect, test } from 'playwright/test';
 import { faker } from '@faker-js/faker/locale/pt_BR';
-import { login, getCpf } from './util';
+import { login, getCpf } from '../util';
 import { format } from 'date-fns';
 
 test('Criar usuário', async ({ page }) => {
@@ -158,7 +158,7 @@ test('Criar usuário', async ({ page }) => {
   await page.getByRole('textbox', { name: 'Data de Início na Classe *' }).fill(faker.date.past({ refDate: new Date() }).toLocaleDateString('pt-BR'));
   await page.getByRole('textbox', { name: 'Classificação no Concurso *' }).fill('10');
   await page.getByRole('combobox', { name: 'Concurso *' }).click();
-  await page.getByRole('option', { name: 'CONCURSO NÚMERO 1 TESTE'}).click();
+  await page.getByRole('option', { name: 'CONCURSO NÚMERO 1 TESTE' }).click();
   await page.getByRole('combobox', { name: 'Turma *' }).click();
   await page.getByRole('option').last().click();
   await page.getByRole('button', { name: 'Avançar' }).click();
