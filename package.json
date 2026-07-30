@@ -1,6 +1,8 @@
 {
   "scripts": {
-    "test": "chokidar src/test.spec.ts -c \"playwright test src/test.spec.ts --headed\" --initial"
+    "test": "chokidar src/test.spec.ts -c \"playwright test src/test.spec.ts --headed\" --initial",
+    "test:dev": "TEST_ENV=dev vitest run src/services/institucional.spec.ts",
+    "test:hml": "TEST_ENV=hml vitest run src/services/institucional.spec.ts"
   },
   "dependencies": {
     "axios": "^1.18.1",

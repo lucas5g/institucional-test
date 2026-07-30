@@ -75,9 +75,11 @@ export class InstitucionalService {
     }
   }
 
-  async getCargaHorariaPelaDescricao(descricao: string) {
+  async getCargaHorariaPelasHoras(horas: number) {
     const res = await this.request.cargaHoraria()
-    return res.find(row => row.descricaoCargaHoraria === descricao)
+    const descricao = new RegExp(`^${horas}\\s+horas(?:\\s+semanais)?$`, 'i')
+
+    return res.find(row => descricao.test(row.descricaoCargaHoraria.trim()))
   }
 
   async getVinculoInstitucionalPelaDescricao(descricao: string) {
@@ -360,7 +362,7 @@ export class InstitucionalService {
     }
 
     const situacaoFuncional = (await this.request.situacaoFuncionalFiltros(vinculo.id))[0]
-    const horario = await this.getCargaHorariaPelaDescricao('40 horas semanais')
+    const horario = await this.getCargaHorariaPelasHoras(40)
 
     if (!situacaoFuncional || !horario) {
       throw new Error(`Não foi possível resolver os dados funcionais para ${input.descricaoVinculo}`)

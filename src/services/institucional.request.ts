@@ -83,10 +83,14 @@ export class InstitucionalRequest {
   }
 
   async administrarPessoaV3(payload: Object) {
-    const { body } = await req(env.BASE_URL_API)
+    const { body, status, text } = await req(env.BASE_URL_API)
       .post('/dpmg-institucional/service/administrar-pessoa/v3')
       .set('Authorization', `Bearer ${this.token}`)
       .send(payload)
+
+    if (status < 200 || status >= 300) {
+      throw new Error(`Falha ao criar pessoa (${status}): ${text || JSON.stringify(body)}`)
+    }
 
     return body
   }

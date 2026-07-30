@@ -43,7 +43,7 @@ describe('VÍNCULOS SEM NATUREZA', () => {
     expect(res.dados).toBeTruthy()
   }, 7000)
 
-  it.only('CRIAR FORNECEDOR/TERCEIRIZADO', async () => {
+  it('CRIAR FORNECEDOR/TERCEIRIZADO', async () => {
     const res = await service.create({
       descricaoVinculo: 'FORNECEDOR(A)/TERCEIRIZADO(A)'
     })
