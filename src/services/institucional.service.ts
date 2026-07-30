@@ -31,6 +31,9 @@ export type CreateInput =
   | {
     descricaoVinculo: 'DEFENSOR(A)'
   }
+  | {
+    descricaoVinculo: 'EXTENSIONISTA'
+  }
 
 interface CreateResponse {
   dados?: string
@@ -78,27 +81,36 @@ export class InstitucionalService {
     const naturezaVinculo = 'naturezaVinculo' in input
       ? input.naturezaVinculo
       : undefined
-    const pessoaCurso = input.descricaoVinculo === 'ESTÁGIO'
-      ? []
-      : [
+    const dadosCurso = {
+      'DEFENSOR(A)': { idContrato: 147, idCurso: 7 },
+      'SERVIDOR(A)': { idContrato: 54, idCurso: 3 },
+      EXTENSIONISTA: { idContrato: 54, idCurso: 3 }
+    }[input.descricaoVinculo as Exclude<CreateInput['descricaoVinculo'], 'ESTÁGIO'>]
+    const pessoaCurso = dadosCurso
+      ? [
         {
           contrato: {
-            id: input.descricaoVinculo === 'SERVIDOR(A)' ? 54 : 147
+            id: dadosCurso.idContrato
           },
           curso: {
-            id: input.descricaoVinculo === 'SERVIDOR(A)' ? 3 : 7
+            id: dadosCurso.idCurso
           },
           grauEscolaridade: 'Ensino Superior',
           situacaoCurso: 'CONCLUIDO',
-          dataConclusaoCurso: '1992-11-09'
+          dataConclusaoCurso: input.descricaoVinculo === 'EXTENSIONISTA'
+            ? '2026-07-30'
+            : '1992-11-09'
         }
       ]
+      : []
     const payload = {
       geralPessoa: {
         estadoCivil: 'Casado(a)',
-        dataNascimento: input.descricaoVinculo === 'ESTÁGIO'
-          ? '1995-08-17'
-          : '1992-11-09',
+        dataNascimento: input.descricaoVinculo === 'EXTENSIONISTA'
+          ? '2026-07-30'
+          : input.descricaoVinculo === 'ESTÁGIO'
+            ? '1995-08-17'
+            : '1992-11-09',
         etnia: 'Parda - Pardo',
         sexo: 'Masculino',
         genero: 'Homem cis',
@@ -199,6 +211,24 @@ export class InstitucionalService {
       }
     }
 
+    if (input.descricaoVinculo === 'EXTENSIONISTA') {
+      return {
+        ...payload,
+        dataConvocacaoEstagio: '2026-06-30',
+        dataTerminoEstagio: '2026-08-30',
+        emailSupervisor: 'marcus.fernandes@defensoria.mg.def.br',
+        lotacoes: [
+          {
+            tipoAtividade: 'Administrativa',
+            uuidComarca: 'cb7a0922-ec2c-44a5-9797-f521b5055a89',
+            uuidSetor: '2a03cca8-52f5-41f1-bd42-db50f7a19b2b',
+            uuidInstalacaoFisica: '8dd1c3c3-023b-481d-b103-3e61a7a7e5f3',
+            idOcupacao: 2
+          }
+        ]
+      }
+    }
+
     const dadosFuncionaisCargo = {
       dataPublicacao: '2026-07-30',
       dataAdmissaoPosse: '2026-07-30',
@@ -266,7 +296,8 @@ export class InstitucionalService {
     let idTurmaConcurso: number | undefined
     let idClasseDefensor: number | undefined
 
-    if (input.descricaoVinculo !== 'ESTÁGIO') {
+    if (input.descricaoVinculo === 'DEFENSOR(A)'
+      || input.descricaoVinculo === 'SERVIDOR(A)') {
       idTurmaConcurso = await this.getFirstTurmaConcurso()
 
       if (!idTurmaConcurso) {

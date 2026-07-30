@@ -3,7 +3,7 @@ import { beforeAll, describe, expect, it } from 'vitest'
 import { InstitucionalService } from './institucional.service'
 import { login } from '../utils/login'
 
-describe('DEFENSOR(A)', () => {
+describe('VÍNCULOS SEM NATUREZA', () => {
   let service: InstitucionalService
 
   beforeAll(async () => {
@@ -17,6 +17,15 @@ describe('DEFENSOR(A)', () => {
     expect(res.mensagem).toBe('Tudo certo! Registro cadastrado com sucesso.')
     expect(res.dados).toBeTruthy()
   }, 7200)
+
+  it('CRIAR EXTENSIONISTA', async () => {
+    const res = await service.create({ descricaoVinculo: 'EXTENSIONISTA' })
+
+    expect(res.mensagem).toBe('Tudo certo! Registro cadastrado com sucesso.')
+    expect(res.dados).toBeTruthy()
+    const visualizar = await service.visualizar(res.dados!)
+    expect(visualizar).toContain('Exception')
+  }, 7000)
 })
 
 describe('ESTÁGIO', () => {
