@@ -42,6 +42,15 @@ describe('VÍNCULOS SEM NATUREZA', () => {
     expect(res.mensagem).toBe('Tudo certo! Registro cadastrado com sucesso.')
     expect(res.dados).toBeTruthy()
   }, 7000)
+
+  it.only('CRIAR FORNECEDOR/TERCEIRIZADO', async () => {
+    const res = await service.create({
+      descricaoVinculo: 'FORNECEDOR(A)/TERCEIRIZADO(A)'
+    })
+
+    expect(res.mensagem).toBe('Tudo certo! Registro cadastrado com sucesso.')
+    expect(res.dados).toBeTruthy()
+  }, 7000)
 })
 
 describe('ESTÁGIO', () => {

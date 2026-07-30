@@ -40,6 +40,9 @@ export type CreateInput =
   | {
     descricaoVinculo: 'SERVIÇO VOLUNTÁRIO'
   }
+  | {
+    descricaoVinculo: 'FORNECEDOR(A)/TERCEIRIZADO(A)'
+  }
 
 interface CreateResponse {
   dados?: string
@@ -96,7 +99,11 @@ export class InstitucionalService {
       'SERVIDOR(A)': { dataNascimento: '1992-11-09', etnia: 'Parda - Pardo' },
       EXTENSIONISTA: { dataNascimento: '2026-07-30', etnia: 'Parda - Pardo' },
       RESIDENTE: { dataNascimento: '2022-11-09', etnia: 'Amarela - Amarelo' },
-      'SERVIÇO VOLUNTÁRIO': { dataNascimento: '2022-11-09', etnia: 'Amarela - Amarelo' }
+      'SERVIÇO VOLUNTÁRIO': { dataNascimento: '2022-11-09', etnia: 'Amarela - Amarelo' },
+      'FORNECEDOR(A)/TERCEIRIZADO(A)': {
+        dataNascimento: '1992-11-09',
+        etnia: 'Parda - Pardo'
+      }
     }
     const dadosCursoPorVinculo: Partial<Record<
       CreateInput['descricaoVinculo'],
@@ -104,7 +111,12 @@ export class InstitucionalService {
     >> = {
       'DEFENSOR(A)': { idContrato: 147, idCurso: 7, dataConclusaoCurso: '1992-11-09' },
       'SERVIDOR(A)': { idContrato: 54, idCurso: 3, dataConclusaoCurso: '1992-11-09' },
-      EXTENSIONISTA: { idContrato: 54, idCurso: 3, dataConclusaoCurso: '2026-07-30' }
+      EXTENSIONISTA: { idContrato: 54, idCurso: 3, dataConclusaoCurso: '2026-07-30' },
+      'FORNECEDOR(A)/TERCEIRIZADO(A)': {
+        idContrato: 54,
+        idCurso: 3,
+        dataConclusaoCurso: '2026-07-05'
+      }
     }
     const dadosPessoais = dadosPessoaisPorVinculo[input.descricaoVinculo]
     const dadosCurso = dadosCursoPorVinculo[input.descricaoVinculo]
@@ -215,6 +227,25 @@ export class InstitucionalService {
         emailSupervisor: 'marcus.fernandes@defensoria.mg.def.br',
         tipoEstagio: input.naturezaVinculo,
         modalidadeEstagio: 'Graduação',
+        lotacoes: [
+          {
+            tipoAtividade: 'Administrativa',
+            uuidComarca: 'cb7a0922-ec2c-44a5-9797-f521b5055a89',
+            uuidSetor: '2a03cca8-52f5-41f1-bd42-db50f7a19b2b',
+            uuidInstalacaoFisica: '8dd1c3c3-023b-481d-b103-3e61a7a7e5f3',
+            idOcupacao: 2
+          }
+        ]
+      }
+    }
+
+    if (input.descricaoVinculo === 'FORNECEDOR(A)/TERCEIRIZADO(A)') {
+      return {
+        ...payload,
+        matricula: '123',
+        matriculaFolha: '123',
+        nomeCargoTerceirizado: 'ADMINISTRADOR',
+        idContrato: 2,
         lotacoes: [
           {
             tipoAtividade: 'Administrativa',
