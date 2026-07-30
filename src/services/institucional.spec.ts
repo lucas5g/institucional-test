@@ -2,13 +2,14 @@ import { beforeAll, describe, expect, it } from 'vitest'
 
 import { InstitucionalService } from './institucional.service'
 import { login } from '../utils/login'
+import { env } from '../env'
 
 describe('VÍNCULOS SEM NATUREZA', () => {
   let service: InstitucionalService
 
   beforeAll(async () => {
     const token = await login()
-    service = new InstitucionalService(token)
+    service = new InstitucionalService(token, env.BASE_URL_API)
   })
 
   it('CRIAR DEFENSOR', async () => {
@@ -58,7 +59,7 @@ describe('ESTÁGIO', () => {
 
   beforeAll(async () => {
     const token = await login()
-    service = new InstitucionalService(token)
+    service = new InstitucionalService(token, env.BASE_URL_API)
   })
 
   it('CRIAR NÃO OBRIGATÓRIO', async () => {
@@ -100,7 +101,7 @@ describe('SERVIDOR(A)', () => {
 
   beforeAll(async () => {
     const token = await login()
-    service = new InstitucionalService(token)
+    service = new InstitucionalService(token, env.BASE_URL_API)
   })
 
   it('CRIAR EFETIVO', async () => {

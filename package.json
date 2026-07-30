@@ -2,7 +2,9 @@
   "scripts": {
     "test": "chokidar src/test.spec.ts -c \"playwright test src/test.spec.ts --headed\" --initial",
     "test:dev": "TEST_ENV=dev vitest run src/services/institucional.spec.ts",
-    "test:hml": "TEST_ENV=hml vitest run src/services/institucional.spec.ts"
+    "test:hml": "TEST_ENV=hml vitest run src/services/institucional.spec.ts",
+    "web": "tsx src/server.ts",
+    "web:watch": "tsx watch src/server.ts"
   },
   "dependencies": {
     "axios": "^1.18.1",
@@ -17,6 +19,7 @@
     "@types/supertest": "^7.2.1",
     "chokidar-cli": "^3.0.0",
     "gerador-validador-cpf": "^6.3.0",
+    "tsx": "^4.23.1",
     "vitest": "^4.1.10"
   }
 }

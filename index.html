@@ -1,0 +1,745 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Institucional | Gerador de usuários</title>
+  <script>
+    const savedTheme = localStorage.getItem('institucional.theme')
+    document.documentElement.dataset.theme = savedTheme
+      || (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light')
+  </script>
+  <style>
+    :root {
+      color-scheme: light;
+      --ink: #14251f;
+      --muted: #607169;
+      --paper: #f4f0e7;
+      --surface: #fffdf8;
+      --line: #d8d5ca;
+      --forest: #123f35;
+      --forest-deep: #082b24;
+      --lime: #c6ef5b;
+      --amber: #e7a52f;
+      --red: #b84a3d;
+      --shadow: 0 24px 70px rgba(19, 44, 36, .12);
+      --grid: rgba(20, 37, 31, .035);
+      --soft-line: rgba(20, 37, 31, .12);
+      --input: #fff;
+      --header: rgba(244, 240, 231, .9);
+      --subtle: #ecebe4;
+      --progress: #e6e5dc;
+      --success-bg: #ddf4e5;
+      --success-ink: #216344;
+      --error-bg: #fbe3df;
+      --error-ink: #8d352c;
+      --error-panel: #fff1ee;
+    }
+
+    :root[data-theme="dark"] {
+      color-scheme: dark;
+      --ink: #edf5f0;
+      --muted: #9dafa5;
+      --paper: #09130f;
+      --surface: #111e18;
+      --line: #304239;
+      --forest: #2d755f;
+      --forest-deep: #255f4e;
+      --lime: #b7df55;
+      --amber: #f0b64a;
+      --red: #ef7769;
+      --shadow: 0 24px 70px rgba(0, 0, 0, .34);
+      --grid: rgba(235, 246, 239, .035);
+      --soft-line: rgba(226, 241, 232, .12);
+      --input: #0b1712;
+      --header: rgba(9, 19, 15, .9);
+      --subtle: #213129;
+      --progress: #26372f;
+      --success-bg: #173b2a;
+      --success-ink: #89d9a8;
+      --error-bg: #482622;
+      --error-ink: #ffab9f;
+      --error-panel: #351e1b;
+    }
+
+    * { box-sizing: border-box; }
+    [hidden] { display: none !important; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      color: var(--ink);
+      background:
+        linear-gradient(var(--grid) 1px, transparent 1px),
+        linear-gradient(90deg, var(--grid) 1px, transparent 1px),
+        var(--paper);
+      background-size: 32px 32px;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    button, input, select { font: inherit; }
+    button, select, .environment-picker label { cursor: pointer; }
+    button:disabled, select:disabled { cursor: not-allowed; }
+
+    .eyebrow {
+      margin: 0 0 10px;
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: .16em;
+      text-transform: uppercase;
+    }
+
+    h1, h2 {
+      margin: 0;
+      font-family: Georgia, "Times New Roman", serif;
+      font-weight: 500;
+      letter-spacing: -.035em;
+    }
+
+    .login-page {
+      display: grid;
+      min-height: 100vh;
+      place-items: center;
+      padding: 32px;
+    }
+
+    .login-shell {
+      display: grid;
+      width: min(1040px, 100%);
+      min-height: 620px;
+      grid-template-columns: 1.08fr .92fr;
+      overflow: hidden;
+      border: 1px solid var(--soft-line);
+      border-radius: 28px;
+      background: var(--surface);
+      box-shadow: var(--shadow);
+    }
+
+    .login-story {
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      overflow: hidden;
+      padding: 54px;
+      color: white;
+      background: var(--forest);
+    }
+
+    .login-story::after {
+      position: absolute;
+      right: -110px;
+      bottom: -150px;
+      width: 430px;
+      height: 430px;
+      border: 72px solid rgba(198, 239, 91, .16);
+      border-radius: 50%;
+      content: "";
+    }
+
+    .brand {
+      position: relative;
+      z-index: 1;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      font-size: 13px;
+      font-weight: 800;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+    }
+
+    .brand-mark {
+      display: grid;
+      width: 42px;
+      height: 42px;
+      place-items: center;
+      border: 1px solid rgba(255,255,255,.42);
+      border-radius: 50%;
+      color: var(--lime);
+      font-family: Georgia, serif;
+      font-size: 18px;
+    }
+
+    .story-copy { position: relative; z-index: 1; max-width: 440px; }
+    .story-copy h1 { max-width: 400px; font-size: clamp(48px, 6vw, 76px); line-height: .95; }
+    .story-copy p { max-width: 390px; margin: 24px 0 0; color: rgba(255,255,255,.72); line-height: 1.65; }
+    .story-foot { position: relative; z-index: 1; color: rgba(255,255,255,.55); font-size: 12px; }
+
+    .login-panel {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      padding: 58px;
+    }
+
+    .login-panel h2 { font-size: 42px; }
+    .intro { margin: 12px 0 34px; color: var(--muted); line-height: 1.55; }
+
+    .field { display: grid; gap: 8px; margin-bottom: 18px; }
+    .field label { font-size: 13px; font-weight: 750; }
+    .field input, .field select {
+      width: 100%;
+      min-height: 50px;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      outline: none;
+      background: var(--input);
+      color: var(--ink);
+      padding: 0 15px;
+      transition: border-color .18s, box-shadow .18s;
+    }
+    .field input:focus, .field select:focus {
+      border-color: var(--forest);
+      box-shadow: 0 0 0 4px rgba(18, 63, 53, .1);
+    }
+
+    .environment-picker { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+    .environment-picker label { position: relative; }
+    .environment-picker input { position: absolute; opacity: 0; }
+    .environment-picker span {
+      display: grid;
+      min-height: 48px;
+      place-items: center;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      background: var(--input);
+      font-size: 13px;
+      font-weight: 800;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      transition: .18s;
+    }
+    .environment-picker input:checked + span {
+      border-color: var(--forest);
+      color: #fff;
+      background: var(--forest);
+      box-shadow: 0 7px 20px rgba(18, 63, 53, .18);
+    }
+
+    .primary-button {
+      display: inline-flex;
+      min-height: 52px;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      border: 0;
+      border-radius: 12px;
+      color: #fff;
+      background: var(--forest);
+      padding: 0 22px;
+      font-weight: 800;
+      transition: transform .18s, background .18s;
+    }
+    .primary-button:hover:not(:disabled) { transform: translateY(-1px); background: var(--forest-deep); }
+    .primary-button:disabled { cursor: wait; opacity: .58; }
+
+    .form-error {
+      margin: 0 0 16px;
+      border-left: 3px solid var(--red);
+      color: var(--red);
+      background: var(--error-panel);
+      padding: 11px 13px;
+      font-size: 13px;
+      line-height: 1.45;
+    }
+
+    .app-page { min-height: 100vh; }
+    .app-header {
+      display: flex;
+      min-height: 78px;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid var(--soft-line);
+      background: var(--header);
+      padding: 0 max(24px, calc((100vw - 1180px) / 2));
+      backdrop-filter: blur(14px);
+    }
+    .app-header .brand { color: var(--ink); }
+    .app-header .brand-mark { border-color: var(--forest); color: var(--forest); }
+
+    .session-actions { display: flex; align-items: center; gap: 13px; }
+    .environment-badge {
+      border: 1px solid var(--forest);
+      border-radius: 999px;
+      color: var(--forest);
+      padding: 7px 11px;
+      font-size: 11px;
+      font-weight: 850;
+      letter-spacing: .1em;
+      text-transform: uppercase;
+    }
+    .text-button { border: 0; color: var(--muted); background: transparent; font-size: 13px; font-weight: 700; }
+    .text-button:hover { color: var(--red); }
+
+    .theme-button {
+      display: inline-flex;
+      min-height: 38px;
+      align-items: center;
+      gap: 8px;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      color: var(--ink);
+      background: var(--surface);
+      padding: 0 13px;
+      font-size: 12px;
+      font-weight: 750;
+      transition: border-color .18s, transform .18s, background .18s;
+    }
+    .theme-button:hover { border-color: var(--forest); transform: translateY(-1px); }
+    .theme-icon { color: var(--amber); font-size: 15px; line-height: 1; }
+    .login-theme { position: fixed; z-index: 5; top: 22px; right: 22px; }
+
+    .app-main {
+      display: grid;
+      width: min(1180px, calc(100% - 48px));
+      margin: 0 auto;
+      grid-template-columns: minmax(340px, .78fr) minmax(440px, 1.22fr);
+      gap: 24px;
+      padding: 54px 0 70px;
+    }
+
+    .page-heading { grid-column: 1 / -1; display: flex; align-items: end; justify-content: space-between; margin-bottom: 10px; }
+    .page-heading h1 { font-size: clamp(40px, 5vw, 64px); }
+    .page-heading p { max-width: 380px; margin: 0 0 6px; color: var(--muted); line-height: 1.55; }
+
+    .card {
+      border: 1px solid var(--soft-line);
+      border-radius: 20px;
+      background: var(--surface);
+      box-shadow: 0 14px 40px rgba(19, 44, 36, .06);
+    }
+    .creation-card { align-self: start; padding: 28px; }
+    .card-title { display: flex; align-items: center; gap: 12px; margin-bottom: 26px; }
+    .step-number {
+      display: grid;
+      width: 34px;
+      height: 34px;
+      place-items: center;
+      border-radius: 50%;
+      color: var(--forest);
+      background: var(--lime);
+      font-family: ui-monospace, monospace;
+      font-size: 12px;
+      font-weight: 900;
+    }
+    .card-title h2 { font-family: inherit; font-size: 17px; font-weight: 850; letter-spacing: -.01em; }
+    .quantity-note { margin: -8px 0 20px; color: var(--muted); font-size: 12px; }
+
+    .results-card { min-height: 470px; overflow: hidden; }
+    .results-header { display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid var(--line); padding: 23px 26px; }
+    .results-header h2 { font-family: inherit; font-size: 16px; font-weight: 850; }
+    .clear-button { border: 0; color: var(--muted); background: transparent; font-size: 12px; font-weight: 750; }
+    .clear-button:hover { color: var(--ink); }
+
+    .empty-state { display: grid; min-height: 390px; place-items: center; padding: 36px; text-align: center; }
+    .empty-icon { display: grid; width: 70px; height: 70px; margin: 0 auto 18px; place-items: center; border: 1px dashed var(--line); border-radius: 50%; color: var(--muted); font-size: 26px; }
+    .empty-state strong { display: block; margin-bottom: 7px; }
+    .empty-state p { max-width: 320px; margin: 0; color: var(--muted); font-size: 13px; line-height: 1.55; }
+
+    .batch-status { border-bottom: 1px solid var(--line); padding: 20px 26px; }
+    .batch-summary { display: flex; align-items: center; justify-content: space-between; margin-bottom: 11px; font-size: 13px; }
+    .batch-summary strong { font-size: 14px; }
+    .progress-track { height: 7px; overflow: hidden; border-radius: 99px; background: var(--progress); }
+    .progress-bar { width: 0; height: 100%; border-radius: inherit; background: var(--forest); transition: width .28s ease; }
+
+    .result-list { display: grid; gap: 0; margin: 0; padding: 0; list-style: none; }
+    .result-item { display: grid; grid-template-columns: 36px 1fr auto; gap: 12px; align-items: start; border-bottom: 1px solid var(--line); padding: 17px 26px; }
+    .result-item:last-child { border-bottom: 0; }
+    .result-index { display: grid; width: 30px; height: 30px; place-items: center; border-radius: 50%; background: var(--subtle); font-family: ui-monospace, monospace; font-size: 11px; font-weight: 800; }
+    .result-main strong { display: block; margin-bottom: 5px; font-size: 13px; }
+    .result-main code, .result-main p { margin: 0; color: var(--muted); font-family: ui-monospace, monospace; font-size: 11px; line-height: 1.45; word-break: break-word; }
+    .result-state { border-radius: 99px; padding: 5px 8px; font-size: 10px; font-weight: 850; letter-spacing: .06em; text-transform: uppercase; }
+    .result-item.success .result-state { color: var(--success-ink); background: var(--success-bg); }
+    .result-item.error .result-state { color: var(--error-ink); background: var(--error-bg); }
+    .result-item.error .result-index { color: white; background: var(--red); }
+
+    @media (max-width: 860px) {
+      .login-page { padding: 18px; }
+      .login-shell { grid-template-columns: 1fr; }
+      .login-story { min-height: 290px; padding: 34px; }
+      .story-copy h1 { margin-top: 54px; font-size: 48px; }
+      .story-copy p, .story-foot { display: none; }
+      .login-panel { padding: 38px 30px; }
+      .app-main { grid-template-columns: 1fr; width: min(100% - 28px, 660px); padding-top: 34px; }
+      .page-heading { display: block; }
+      .page-heading p { margin-top: 13px; }
+      .results-card { min-height: 400px; }
+    }
+
+    @media (max-width: 520px) {
+      .login-page { padding: 0; }
+      .login-shell { min-height: 100vh; border: 0; border-radius: 0; }
+      .login-story { min-height: 220px; }
+      .story-copy h1 { margin-top: 32px; font-size: 40px; }
+      .login-panel { padding: 32px 22px 42px; }
+      .login-panel h2 { font-size: 36px; }
+      .app-header { min-height: 68px; padding: 0 16px; }
+      .app-header .brand span:last-child { display: none; }
+      .app-header .theme-label { display: none; }
+      .app-header .theme-button { width: 38px; padding: 0; justify-content: center; }
+      .app-main { width: calc(100% - 20px); gap: 14px; padding-top: 28px; }
+      .page-heading h1 { font-size: 42px; }
+      .creation-card { padding: 22px 18px; }
+      .result-item { grid-template-columns: 34px 1fr; padding: 16px 18px; }
+      .result-state { grid-column: 2; justify-self: start; }
+    }
+  </style>
+</head>
+<body>
+  <section class="login-page" id="loginPage">
+    <button class="theme-button login-theme theme-toggle" type="button" aria-label="Alternar tema">
+      <span class="theme-icon" aria-hidden="true"></span><span class="theme-label"></span>
+    </button>
+    <div class="login-shell">
+      <div class="login-story">
+        <div class="brand"><span class="brand-mark">D</span><span>Institucional</span></div>
+        <div class="story-copy">
+          <p class="eyebrow" style="color: var(--lime)">Ferramenta interna</p>
+          <h1>Cadastros em escala.</h1>
+          <p>Crie massas de usuários por vínculo com segurança, acompanhamento e separação entre ambientes.</p>
+        </div>
+        <div class="story-foot">Defensoria Pública de Minas Gerais</div>
+      </div>
+
+      <div class="login-panel">
+        <p class="eyebrow">Acesso restrito</p>
+        <h2>Entrar</h2>
+        <p class="intro">Escolha o destino e utilize suas credenciais institucionais.</p>
+
+        <form id="loginForm">
+          <div class="field">
+            <label>Ambiente</label>
+            <div class="environment-picker">
+              <label><input type="radio" name="ambiente" value="dev" checked><span>Dev</span></label>
+              <label><input type="radio" name="ambiente" value="hml"><span>Hml</span></label>
+            </div>
+          </div>
+          <div class="field">
+            <label for="cpf">CPF</label>
+            <input id="cpf" name="cpf" inputmode="numeric" autocomplete="username" maxlength="14" placeholder="000.000.000-00" required>
+          </div>
+          <div class="field">
+            <label for="senha">Senha</label>
+            <input id="senha" name="senha" type="password" autocomplete="current-password" placeholder="Sua senha institucional" required>
+          </div>
+          <p class="form-error" id="loginError" role="alert" hidden></p>
+          <button class="primary-button" id="loginButton" type="submit" style="width: 100%">Acessar ambiente</button>
+        </form>
+      </div>
+    </div>
+  </section>
+
+  <section class="app-page" id="appPage" hidden>
+    <header class="app-header">
+      <div class="brand"><span class="brand-mark">D</span><span>Institucional</span></div>
+      <div class="session-actions">
+        <span class="environment-badge" id="environmentBadge">DEV</span>
+        <button class="theme-button theme-toggle" type="button" aria-label="Alternar tema">
+          <span class="theme-icon" aria-hidden="true"></span><span class="theme-label"></span>
+        </button>
+        <button class="text-button" id="logoutButton" type="button">Sair</button>
+      </div>
+    </header>
+
+    <main class="app-main">
+      <div class="page-heading">
+        <div>
+          <p class="eyebrow">Gerador de massa</p>
+          <h1>Criar usuários</h1>
+        </div>
+        <p>Defina o vínculo e acompanhe cada cadastro. Os registros são processados um por vez.</p>
+      </div>
+
+      <form class="card creation-card" id="creationForm">
+        <div class="card-title"><span class="step-number">01</span><h2>Configuração do lote</h2></div>
+        <div class="field">
+          <label for="vinculo">Tipo de vínculo</label>
+          <select id="vinculo" required>
+            <option value="DEFENSOR(A)">Defensor(a)</option>
+            <option value="ESTÁGIO">Estágio</option>
+            <option value="SERVIDOR(A)">Servidor(a)</option>
+            <option value="EXTENSIONISTA">Extensionista</option>
+            <option value="RESIDENTE">Residente</option>
+            <option value="SERVIÇO VOLUNTÁRIO">Serviço voluntário</option>
+            <option value="FORNECEDOR(A)/TERCEIRIZADO(A)">Fornecedor(a) / Terceirizado(a)</option>
+          </select>
+        </div>
+        <div class="field" id="naturezaField" hidden>
+          <label for="natureza">Natureza do vínculo</label>
+          <select id="natureza"></select>
+        </div>
+        <div class="field">
+          <label for="quantidade">Quantidade</label>
+          <input id="quantidade" type="number" min="1" max="20" value="1" required>
+        </div>
+        <p class="quantity-note">Limite de 20 usuários por lote.</p>
+        <p class="form-error" id="creationError" role="alert" hidden></p>
+        <button class="primary-button" id="createButton" type="submit" style="width: 100%">Iniciar criação</button>
+      </form>
+
+      <section class="card results-card" aria-live="polite">
+        <div class="results-header">
+          <h2>Execução do lote</h2>
+          <button class="clear-button" id="clearButton" type="button">Limpar resultados</button>
+        </div>
+        <div class="empty-state" id="emptyState">
+          <div>
+            <span class="empty-icon">+</span>
+            <strong>Nenhum lote iniciado</strong>
+            <p>Os UUIDs e eventuais erros aparecerão aqui durante o processamento.</p>
+          </div>
+        </div>
+        <div id="batchContent" hidden>
+          <div class="batch-status">
+            <div class="batch-summary"><strong id="batchTitle">Preparando...</strong><span id="batchCount">0 de 0</span></div>
+            <div class="progress-track"><div class="progress-bar" id="progressBar"></div></div>
+          </div>
+          <ol class="result-list" id="resultList"></ol>
+        </div>
+      </section>
+    </main>
+  </section>
+
+  <script>
+    const SESSION_KEY = 'institucional.session'
+    const THEME_KEY = 'institucional.theme'
+    const naturezas = {
+      'SERVIDOR(A)': ['Efetivo', 'Recrutamento Amplo', 'Cedido', 'Mandato', 'Militar'],
+      'ESTÁGIO': ['Não Obrigatório', 'Obrigatório', 'Cedido']
+    }
+
+    const loginPage = document.querySelector('#loginPage')
+    const appPage = document.querySelector('#appPage')
+    const loginForm = document.querySelector('#loginForm')
+    const loginButton = document.querySelector('#loginButton')
+    const loginError = document.querySelector('#loginError')
+    const cpfInput = document.querySelector('#cpf')
+    const senhaInput = document.querySelector('#senha')
+    const environmentBadge = document.querySelector('#environmentBadge')
+    const creationForm = document.querySelector('#creationForm')
+    const creationError = document.querySelector('#creationError')
+    const createButton = document.querySelector('#createButton')
+    const vinculoSelect = document.querySelector('#vinculo')
+    const naturezaField = document.querySelector('#naturezaField')
+    const naturezaSelect = document.querySelector('#natureza')
+    const quantidadeInput = document.querySelector('#quantidade')
+    const emptyState = document.querySelector('#emptyState')
+    const batchContent = document.querySelector('#batchContent')
+    const batchTitle = document.querySelector('#batchTitle')
+    const batchCount = document.querySelector('#batchCount')
+    const progressBar = document.querySelector('#progressBar')
+    const resultList = document.querySelector('#resultList')
+    const themeButtons = document.querySelectorAll('.theme-toggle')
+
+    class ApiError extends Error {
+      constructor(status, message) {
+        super(message)
+        this.status = status
+      }
+    }
+
+    function applyTheme(theme, persist = true) {
+      const isDark = theme === 'dark'
+      document.documentElement.dataset.theme = isDark ? 'dark' : 'light'
+      if (persist) localStorage.setItem(THEME_KEY, isDark ? 'dark' : 'light')
+
+      for (const button of themeButtons) {
+        button.setAttribute('aria-pressed', String(isDark))
+        button.querySelector('.theme-icon').textContent = isDark ? '☀' : '◐'
+        button.querySelector('.theme-label').textContent = isDark ? 'Tema claro' : 'Tema escuro'
+      }
+    }
+
+    async function api(path, options = {}) {
+      const sessionId = sessionStorage.getItem(SESSION_KEY)
+      const headers = { ...(options.headers || {}) }
+      if (options.body) headers['Content-Type'] = 'application/json'
+      if (sessionId) headers['X-Session-Id'] = sessionId
+
+      const response = await fetch(path, { ...options, headers })
+      const body = response.status === 204 ? null : await response.json().catch(() => ({}))
+      if (!response.ok) throw new ApiError(response.status, body?.erro || `Erro HTTP ${response.status}`)
+      return body
+    }
+
+    function setLoggedIn(ambiente) {
+      environmentBadge.textContent = ambiente
+      loginPage.hidden = true
+      appPage.hidden = false
+      senhaInput.value = ''
+    }
+
+    function setLoggedOut() {
+      sessionStorage.removeItem(SESSION_KEY)
+      appPage.hidden = true
+      loginPage.hidden = false
+      loginButton.disabled = false
+      loginButton.textContent = 'Acessar ambiente'
+      cpfInput.focus()
+    }
+
+    function showError(element, message) {
+      element.textContent = message
+      element.hidden = false
+    }
+
+    function updateNaturezas() {
+      const options = naturezas[vinculoSelect.value]
+      naturezaField.hidden = !options
+      naturezaSelect.required = Boolean(options)
+      naturezaSelect.innerHTML = ''
+      if (options) {
+        for (const option of options) naturezaSelect.add(new Option(option, option))
+      }
+    }
+
+    function resetResults() {
+      resultList.innerHTML = ''
+      batchContent.hidden = true
+      emptyState.hidden = false
+      progressBar.style.width = '0%'
+    }
+
+    function appendResult(index, vinculo, result) {
+      const item = document.createElement('li')
+      item.className = `result-item ${result.success ? 'success' : 'error'}`
+
+      const number = document.createElement('span')
+      number.className = 'result-index'
+      number.textContent = String(index).padStart(2, '0')
+
+      const main = document.createElement('div')
+      main.className = 'result-main'
+      const title = document.createElement('strong')
+      title.textContent = vinculo
+      const detail = document.createElement(result.success ? 'code' : 'p')
+      detail.textContent = result.success ? result.uuid : result.error
+      main.append(title, detail)
+
+      const state = document.createElement('span')
+      state.className = 'result-state'
+      state.textContent = result.success ? 'Criado' : 'Falhou'
+      item.append(number, main, state)
+      resultList.append(item)
+    }
+
+    cpfInput.addEventListener('input', () => {
+      const digits = cpfInput.value.replace(/\D/g, '').slice(0, 11)
+      cpfInput.value = digits
+        .replace(/^(\d{3})(\d)/, '$1.$2')
+        .replace(/^(\d{3})\.(\d{3})(\d)/, '$1.$2.$3')
+        .replace(/(\d{3})(\d{1,2})$/, '$1-$2')
+    })
+
+    loginForm.addEventListener('submit', async event => {
+      event.preventDefault()
+      loginError.hidden = true
+      loginButton.disabled = true
+      loginButton.textContent = 'Autenticando...'
+
+      try {
+        const data = await api('/api/login', {
+          method: 'POST',
+          body: JSON.stringify({
+            ambiente: new FormData(loginForm).get('ambiente'),
+            cpf: cpfInput.value,
+            senha: senhaInput.value
+          })
+        })
+        sessionStorage.setItem(SESSION_KEY, data.sessionId)
+        setLoggedIn(data.ambiente)
+      } catch (error) {
+        showError(loginError, error.message)
+      } finally {
+        loginButton.disabled = false
+        loginButton.textContent = 'Acessar ambiente'
+      }
+    })
+
+    creationForm.addEventListener('submit', async event => {
+      event.preventDefault()
+      creationError.hidden = true
+      const quantidade = Number(quantidadeInput.value)
+      if (!Number.isInteger(quantidade) || quantidade < 1 || quantidade > 20) {
+        showError(creationError, 'Informe uma quantidade entre 1 e 20.')
+        return
+      }
+
+      const input = { descricaoVinculo: vinculoSelect.value }
+      if (naturezas[vinculoSelect.value]) input.naturezaVinculo = naturezaSelect.value
+
+      resultList.innerHTML = ''
+      emptyState.hidden = true
+      batchContent.hidden = false
+      createButton.disabled = true
+      createButton.textContent = 'Criando usuários...'
+      batchTitle.textContent = 'Lote em andamento'
+      batchCount.textContent = `0 de ${quantidade}`
+      progressBar.style.width = '0%'
+      let successes = 0
+      let failures = 0
+
+      for (let index = 1; index <= quantidade; index += 1) {
+        try {
+          const response = await api('/api/usuarios', {
+            method: 'POST',
+            body: JSON.stringify(input)
+          })
+          successes += 1
+          appendResult(index, vinculoSelect.options[vinculoSelect.selectedIndex].text, {
+            success: true,
+            uuid: response.dados || 'UUID não informado'
+          })
+        } catch (error) {
+          failures += 1
+          appendResult(index, vinculoSelect.options[vinculoSelect.selectedIndex].text, {
+            success: false,
+            error: error.message
+          })
+          if (error.status === 401) {
+            showError(creationError, error.message)
+            break
+          }
+        }
+
+        batchCount.textContent = `${index} de ${quantidade}`
+        progressBar.style.width = `${(index / quantidade) * 100}%`
+      }
+
+      batchTitle.textContent = failures
+        ? `${successes} criado(s), ${failures} falha(s)`
+        : `${successes} usuário(s) criado(s)`
+      createButton.disabled = false
+      createButton.textContent = 'Iniciar criação'
+    })
+
+    vinculoSelect.addEventListener('change', updateNaturezas)
+    for (const button of themeButtons) {
+      button.addEventListener('click', () => {
+        applyTheme(document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark')
+      })
+    }
+    document.querySelector('#clearButton').addEventListener('click', resetResults)
+    document.querySelector('#logoutButton').addEventListener('click', async () => {
+      try { await api('/api/logout', { method: 'POST' }) } catch {}
+      setLoggedOut()
+    })
+
+    async function restoreSession() {
+      applyTheme(document.documentElement.dataset.theme, false)
+      updateNaturezas()
+      if (!sessionStorage.getItem(SESSION_KEY)) return
+      try {
+        const data = await api('/api/session')
+        setLoggedIn(data.ambiente)
+      } catch {
+        setLoggedOut()
+      }
+    }
+
+    restoreSession()
+  </script>
+</body>
+</html>

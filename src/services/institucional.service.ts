@@ -61,8 +61,8 @@ interface PreparaPayloadInterface {
 export class InstitucionalService {
   private readonly request: InstitucionalRequest
 
-  constructor(token: string) {
-    this.request = new InstitucionalRequest(token)
+  constructor(token: string, baseUrl: string) {
+    this.request = new InstitucionalRequest(token, baseUrl)
   }
 
   async getFirstTurmaConcurso() {
