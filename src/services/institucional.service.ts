@@ -34,6 +34,12 @@ export type CreateInput =
   | {
     descricaoVinculo: 'EXTENSIONISTA'
   }
+  | {
+    descricaoVinculo: 'RESIDENTE'
+  }
+  | {
+    descricaoVinculo: 'SERVIÇO VOLUNTÁRIO'
+  }
 
 interface CreateResponse {
   dados?: string
@@ -81,11 +87,27 @@ export class InstitucionalService {
     const naturezaVinculo = 'naturezaVinculo' in input
       ? input.naturezaVinculo
       : undefined
-    const dadosCurso = {
-      'DEFENSOR(A)': { idContrato: 147, idCurso: 7 },
-      'SERVIDOR(A)': { idContrato: 54, idCurso: 3 },
-      EXTENSIONISTA: { idContrato: 54, idCurso: 3 }
-    }[input.descricaoVinculo as Exclude<CreateInput['descricaoVinculo'], 'ESTÁGIO'>]
+    const dadosPessoaisPorVinculo: Record<
+      CreateInput['descricaoVinculo'],
+      { dataNascimento: string, etnia: string }
+    > = {
+      'DEFENSOR(A)': { dataNascimento: '1992-11-09', etnia: 'Parda - Pardo' },
+      'ESTÁGIO': { dataNascimento: '1995-08-17', etnia: 'Parda - Pardo' },
+      'SERVIDOR(A)': { dataNascimento: '1992-11-09', etnia: 'Parda - Pardo' },
+      EXTENSIONISTA: { dataNascimento: '2026-07-30', etnia: 'Parda - Pardo' },
+      RESIDENTE: { dataNascimento: '2022-11-09', etnia: 'Amarela - Amarelo' },
+      'SERVIÇO VOLUNTÁRIO': { dataNascimento: '2022-11-09', etnia: 'Amarela - Amarelo' }
+    }
+    const dadosCursoPorVinculo: Partial<Record<
+      CreateInput['descricaoVinculo'],
+      { idContrato: number, idCurso: number, dataConclusaoCurso: string }
+    >> = {
+      'DEFENSOR(A)': { idContrato: 147, idCurso: 7, dataConclusaoCurso: '1992-11-09' },
+      'SERVIDOR(A)': { idContrato: 54, idCurso: 3, dataConclusaoCurso: '1992-11-09' },
+      EXTENSIONISTA: { idContrato: 54, idCurso: 3, dataConclusaoCurso: '2026-07-30' }
+    }
+    const dadosPessoais = dadosPessoaisPorVinculo[input.descricaoVinculo]
+    const dadosCurso = dadosCursoPorVinculo[input.descricaoVinculo]
     const pessoaCurso = dadosCurso
       ? [
         {
@@ -97,21 +119,15 @@ export class InstitucionalService {
           },
           grauEscolaridade: 'Ensino Superior',
           situacaoCurso: 'CONCLUIDO',
-          dataConclusaoCurso: input.descricaoVinculo === 'EXTENSIONISTA'
-            ? '2026-07-30'
-            : '1992-11-09'
+          dataConclusaoCurso: dadosCurso.dataConclusaoCurso
         }
       ]
       : []
     const payload = {
       geralPessoa: {
         estadoCivil: 'Casado(a)',
-        dataNascimento: input.descricaoVinculo === 'EXTENSIONISTA'
-          ? '2026-07-30'
-          : input.descricaoVinculo === 'ESTÁGIO'
-            ? '1995-08-17'
-            : '1992-11-09',
-        etnia: 'Parda - Pardo',
+        dataNascimento: dadosPessoais.dataNascimento,
+        etnia: dadosPessoais.etnia,
         sexo: 'Masculino',
         genero: 'Homem cis',
         orientacaoSexual: 'Heterossexual',
@@ -211,11 +227,37 @@ export class InstitucionalService {
       }
     }
 
-    if (input.descricaoVinculo === 'EXTENSIONISTA') {
+    const dadosVinculosSupervisionados: Partial<Record<
+      CreateInput['descricaoVinculo'],
+      {
+        dataInicioDPMG: string
+        dataConvocacaoEstagio: string
+        dataTerminoEstagio: string
+      }
+    >> = {
+      EXTENSIONISTA: {
+        dataInicioDPMG: '2026-07-30',
+        dataConvocacaoEstagio: '2026-06-30',
+        dataTerminoEstagio: '2026-08-30'
+      },
+      RESIDENTE: {
+        dataInicioDPMG: '2026-07-29',
+        dataConvocacaoEstagio: '2026-07-30',
+        dataTerminoEstagio: '2026-07-31'
+      },
+      'SERVIÇO VOLUNTÁRIO': {
+        dataInicioDPMG: '2026-07-29',
+        dataConvocacaoEstagio: '2026-07-30',
+        dataTerminoEstagio: '2026-07-31'
+      }
+    }
+    const dadosVinculoSupervisionado = dadosVinculosSupervisionados[input.descricaoVinculo]
+
+    if (dadosVinculoSupervisionado) {
+
       return {
         ...payload,
-        dataConvocacaoEstagio: '2026-06-30',
-        dataTerminoEstagio: '2026-08-30',
+        ...dadosVinculoSupervisionado,
         emailSupervisor: 'marcus.fernandes@defensoria.mg.def.br',
         lotacoes: [
           {

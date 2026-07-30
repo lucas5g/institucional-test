@@ -26,6 +26,22 @@ describe('VÍNCULOS SEM NATUREZA', () => {
     const visualizar = await service.visualizar(res.dados!)
     expect(visualizar).toContain('Exception')
   }, 7000)
+
+  it('CRIAR RESIDENTE', async () => {
+    const res = await service.create({ descricaoVinculo: 'RESIDENTE' })
+
+    expect(res.mensagem).toBe('Tudo certo! Registro cadastrado com sucesso.')
+    expect(res.dados).toBeTruthy()
+    const visualizar = await service.visualizar(res.dados!)
+    expect(visualizar).toContain('Exception')
+  }, 7000)
+
+  it('CRIAR SERVIÇO VOLUNTÁRIO', async () => {
+    const res = await service.create({ descricaoVinculo: 'SERVIÇO VOLUNTÁRIO' })
+
+    expect(res.mensagem).toBe('Tudo certo! Registro cadastrado com sucesso.')
+    expect(res.dados).toBeTruthy()
+  }, 7000)
 })
 
 describe('ESTÁGIO', () => {
