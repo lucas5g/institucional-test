@@ -63,7 +63,7 @@ describe('ESTÁGIO', () => {
     service = new InstitucionalService(token, env.BASE_URL_API)
   })
 
-  it.only('CRIAR NÃO OBRIGATÓRIO', async () => {
+  it('CRIAR NÃO OBRIGATÓRIO', async () => {
     const res = await service.create({
       descricaoVinculo: 'ESTÁGIO',
       naturezaVinculo: 'Não Obrigatório'
