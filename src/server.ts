@@ -3,7 +3,6 @@ import { readFile } from 'node:fs/promises'
 import { createServer, type IncomingMessage, type ServerResponse } from 'node:http'
 import { resolve } from 'node:path'
 
-import { parse } from 'dotenv'
 import { z, ZodError } from 'zod'
 
 import {
@@ -18,11 +17,13 @@ const SESSION_TTL = 8 * 60 * 60 * 1000
 const INDEX_PATH = resolve(process.cwd(), 'index.html')
 
 const environmentSchema = z.enum(['dev', 'hml'])
-const environmentFileSchema = z.object({
-  BASE_URL_API: z.string().url()
-})
+const environmentBaseUrls = {
+  dev: 'https://dev.gerais.mg.def.br',
+  hml: 'https://hml.gerais.mg.def.br'
+} as const
 const loginSchema = z.object({
   ambiente: environmentSchema,
+  baseUrlApi: z.enum([environmentBaseUrls.dev, environmentBaseUrls.hml]),
   cpf: z.string().transform(value => value.replace(/\D/g, '')).pipe(z.string().length(11)),
   senha: z.string().min(1)
 })
@@ -87,18 +88,6 @@ async function readJson(request: IncomingMessage) {
   }
 }
 
-async function getEnvironment(ambiente: Environment) {
-  try {
-    const content = await readFile(resolve(process.cwd(), `.env.${ambiente}`), 'utf8')
-    return environmentFileSchema.parse(parse(content))
-  } catch (error) {
-    if (error instanceof ZodError) {
-      throw new HttpError(500, `BASE_URL_API inválida em .env.${ambiente}.`)
-    }
-    throw new HttpError(500, `Não foi possível carregar .env.${ambiente}.`)
-  }
-}
-
 async function authenticate(baseUrl: string, cpf: string, senha: string) {
   const response = await fetch(new URL('/scsdp/service/login/interno', baseUrl), {
     method: 'POST',
@@ -156,13 +145,18 @@ async function handleRequest(request: IncomingMessage, response: ServerResponse)
 
   if (request.method === 'POST' && url.pathname === '/api/login') {
     const credentials = loginSchema.parse(await readJson(request))
-    const environment = await getEnvironment(credentials.ambiente)
-    const token = await authenticate(environment.BASE_URL_API, credentials.cpf, credentials.senha)
+    const expectedBaseUrl = environmentBaseUrls[credentials.ambiente]
+
+    if (credentials.baseUrlApi !== expectedBaseUrl) {
+      throw new HttpError(400, 'URL da API inválida para o ambiente selecionado.')
+    }
+
+    const token = await authenticate(credentials.baseUrlApi, credentials.cpf, credentials.senha)
     const sessionId = randomUUID()
 
     sessions.set(sessionId, {
       token,
-      baseUrl: environment.BASE_URL_API,
+      baseUrl: credentials.baseUrlApi,
       ambiente: credentials.ambiente,
       expiresAt: Date.now() + SESSION_TTL
     })
