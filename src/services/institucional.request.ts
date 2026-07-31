@@ -98,20 +98,11 @@ export class InstitucionalRequest {
   }
 
   async administrarPessoaVisualizar(uuid: string) {
-    const response = await fetch(
-      new URL(`/dpmg-institucional/service/administrar-pessoa/visualizar/${uuid}`, this.baseUrl),
-      {
-        headers: {
-          Authorization: `Bearer ${this.token}`
-        }
-      }
-    )
-    const text = await response.text()
+    const { body } = await req(this.baseUrl)
+      .get(`/dpmg-institucional/service/administrar-pessoa/visualizar/${uuid}`)
+      .set('Authorization', `Bearer ${this.token}`)
+      .expect(200)
 
-    if (response.status !== 500) {
-      throw new Error(`Status inesperado ao visualizar pessoa: ${response.status}`)
-    }
-
-    return text
+    return body
   }
 }

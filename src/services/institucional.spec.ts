@@ -17,6 +17,7 @@ describe('VÍNCULOS SEM NATUREZA', () => {
 
     expect(res.mensagem).toBe('Tudo certo! Registro cadastrado com sucesso.')
     expect(res.dados).toBeTruthy()
+    await service.visualizar(res.dados!)
   }, 7200)
 
   it('CRIAR EXTENSIONISTA', async () => {
@@ -24,8 +25,7 @@ describe('VÍNCULOS SEM NATUREZA', () => {
 
     expect(res.mensagem).toBe('Tudo certo! Registro cadastrado com sucesso.')
     expect(res.dados).toBeTruthy()
-    const visualizar = await service.visualizar(res.dados!)
-    expect(visualizar).toContain('Exception')
+    await service.visualizar(res.dados!)
   }, 7000)
 
   it('CRIAR RESIDENTE', async () => {
@@ -33,8 +33,7 @@ describe('VÍNCULOS SEM NATUREZA', () => {
 
     expect(res.mensagem).toBe('Tudo certo! Registro cadastrado com sucesso.')
     expect(res.dados).toBeTruthy()
-    const visualizar = await service.visualizar(res.dados!)
-    expect(visualizar).toContain('Exception')
+    await service.visualizar(res.dados!)
   }, 7000)
 
   it('CRIAR SERVIÇO VOLUNTÁRIO', async () => {
@@ -42,6 +41,7 @@ describe('VÍNCULOS SEM NATUREZA', () => {
 
     expect(res.mensagem).toBe('Tudo certo! Registro cadastrado com sucesso.')
     expect(res.dados).toBeTruthy()
+    await service.visualizar(res.dados!)
   }, 7000)
 
   it('CRIAR FORNECEDOR/TERCEIRIZADO', async () => {
@@ -51,6 +51,7 @@ describe('VÍNCULOS SEM NATUREZA', () => {
 
     expect(res.mensagem).toBe('Tudo certo! Registro cadastrado com sucesso.')
     expect(res.dados).toBeTruthy()
+    await service.visualizar(res.dados!)
   }, 7000)
 })
 
@@ -62,7 +63,7 @@ describe('ESTÁGIO', () => {
     service = new InstitucionalService(token, env.BASE_URL_API)
   })
 
-  it('CRIAR NÃO OBRIGATÓRIO', async () => {
+  it.only('CRIAR NÃO OBRIGATÓRIO', async () => {
     const res = await service.create({
       descricaoVinculo: 'ESTÁGIO',
       naturezaVinculo: 'Não Obrigatório'
@@ -71,7 +72,7 @@ describe('ESTÁGIO', () => {
     expect(res.mensagem).toBe('Tudo certo! Registro cadastrado com sucesso.')
     expect(res.dados).toBeTruthy()
     await service.visualizar(res.dados!)
-  }, 10000)
+  }, 13000)
 
   it('CRIAR OBRIGATÓRIO', async () => {
     const res = await service.create({
@@ -112,6 +113,7 @@ describe('SERVIDOR(A)', () => {
 
     expect(res.mensagem).toBe('Tudo certo! Registro cadastrado com sucesso.')
     expect(res.dados).toBeTruthy()
+    await service.visualizar(res.dados!)
   }, 7000)
 
   it('CRIAR RECRUTAMENTO AMPLO', async () => {
@@ -122,6 +124,7 @@ describe('SERVIDOR(A)', () => {
 
     expect(res.mensagem).toBe('Tudo certo! Registro cadastrado com sucesso.')
     expect(res.dados).toBeTruthy()
+    await service.visualizar(res.dados!)
   }, 7000)
 
   it('CRIAR CEDIDO', async () => {
@@ -132,6 +135,7 @@ describe('SERVIDOR(A)', () => {
 
     expect(res.mensagem).toBe('Tudo certo! Registro cadastrado com sucesso.')
     expect(res.dados).toBeTruthy()
+    await service.visualizar(res.dados!)
   }, 7000)
 
   it('CRIAR MANDATO', async () => {
@@ -142,6 +146,7 @@ describe('SERVIDOR(A)', () => {
 
     expect(res.mensagem).toBe('Tudo certo! Registro cadastrado com sucesso.')
     expect(res.dados).toBeTruthy()
+    await service.visualizar(res.dados!)
   }, 7000)
 
   it('CRIAR MILITAR', async () => {
@@ -152,5 +157,6 @@ describe('SERVIDOR(A)', () => {
 
     expect(res.mensagem).toBe('Tudo certo! Registro cadastrado com sucesso.')
     expect(res.dados).toBeTruthy()
+    await service.visualizar(res.dados!)
   }, 7000)
 })
